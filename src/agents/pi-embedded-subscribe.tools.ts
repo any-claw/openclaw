@@ -185,17 +185,11 @@ function normalizeMediaArtifact(value: unknown): ToolMediaArtifact | undefined {
   if (!mediaUrl && !mediaUrls?.length && !audioAsVoice) {
     return undefined;
   }
-  const artifact: ToolMediaArtifact = {};
-  if (mediaUrl) {
-    artifact.mediaUrl = mediaUrl;
-  }
-  if (mediaUrls?.length) {
-    artifact.mediaUrls = mediaUrls;
-  }
-  if (audioAsVoice) {
-    artifact.audioAsVoice = true;
-  }
-  return artifact;
+  return {
+    ...(mediaUrl ? { mediaUrl } : {}),
+    ...(mediaUrls?.length ? { mediaUrls } : {}),
+    ...(audioAsVoice ? { audioAsVoice } : {}),
+  };
 }
 
 function isToolResultMediaTrusted(toolName: string): boolean {
