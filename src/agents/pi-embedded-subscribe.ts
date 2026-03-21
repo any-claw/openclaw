@@ -556,7 +556,7 @@ export function subscribeEmbeddedPiSession(params: SubscribeEmbeddedPiSessionPar
   const consumePartialReplyDirectives = (text: string, options?: { final?: boolean }) =>
     partialReplyDirectiveAccumulator.consume(text, options);
 
-  const flushBlockReplyBuffer = () => {
+  const flushBlockReplyBuffer = (opts?: { drainOrphanedArtifacts?: boolean }) => {
     if (!params.onBlockReply) {
       return;
     }
@@ -568,10 +568,9 @@ export function subscribeEmbeddedPiSession(params: SubscribeEmbeddedPiSessionPar
       state.blockBuffer = "";
     }
 
-    // If media artifacts are still pending after flushing text (e.g., the assistant
-    // replied with SILENT_REPLY_TOKEN and produced no block text), emit them as a
-    // standalone media-only block reply so they still reach the user.
-    if (state.pendingMediaArtifacts.length > 0) {
+    // Only drain orphaned artifacts at terminal points (agent end), not before
+    // tool executions or message resets where later text may still attach them.
+    if (opts?.drainOrphanedArtifacts && state.pendingMediaArtifacts.length > 0) {
       const { mediaUrls: artifactMediaUrls, audioAsVoice: artifactAudioAsVoice } =
         drainPendingMediaArtifacts();
       if (artifactMediaUrls.length > 0 || artifactAudioAsVoice) {
